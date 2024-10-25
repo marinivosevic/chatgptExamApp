@@ -26,6 +26,7 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { Button } from "./ui/button"
+import Link from "next/link"
 
 // This is sample data.
 const data = {
@@ -164,15 +165,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <div className=" flex  justify-center items-center">
-        <Button
-          className=" w-52 mb-4 "
-          variant="default"
-          size="sm"
-        
-        
+        <Link 
+          href="/dashboard/examCreation"
         >
-          Novi kolokviji +
-        </Button>
+          <Button
+            className=" w-52 mb-4 "
+            variant="default"
+            size="sm"
+          
+          >
+            Novi kolokviji +
+          </Button>
+        </Link>
       </div>
       <SidebarContent>
         <NavMain items={data.navMain} />
