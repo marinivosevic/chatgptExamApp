@@ -3,6 +3,7 @@
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\QuestionController;
 Route::get('/', function () {
     return ['Laravel' => app()->version()];
 });
@@ -17,4 +18,7 @@ Route::get('/db-test', function () {
 
      
 });
-require __DIR__.'/auth.php';
+
+
+
+/* require __DIR__.'/auth.php'; */
