@@ -33,11 +33,19 @@ class QuestionController extends Controller
             'questions' => 'required|array',
             'questions.*.text' => 'required|string',
             'questions.*.points' => 'required|integer',
-            'time' => 'required|integer'
+            'time' => 'required|integer',
+            'date' => 'required|date',
+            'access_code' => 'required|string',
+            'course_id' => 'required|integer'
         ]);
 
         $exam = Exam::create([
-            'title' => $validated['title']
+            'title' => $validated['title'],
+            'time' => $validated['time'],
+            'date' => $validated['date'],
+            'access_code' => $validated['access_code'],
+            'course_id' => $validated['course_id']
+
         ]);
 
         foreach ($validated['questions'] as $questionData) {

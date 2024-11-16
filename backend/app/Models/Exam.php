@@ -9,10 +9,15 @@ class Exam extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'time'];
+    protected $fillable = ['title', 'time' ,'course_id','date','access_code'];
 
     public function questions()
     {
         return $this->hasMany(Question::class);
+    }
+
+    public function course()
+    {
+        return $this->belongsTo(Course::class);
     }
 }

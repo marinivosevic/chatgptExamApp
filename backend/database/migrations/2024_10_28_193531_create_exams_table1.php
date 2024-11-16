@@ -12,11 +12,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('exams', function (Blueprint $table) {
-            $table->id();
-            $table->string('title');
-            $table->timestamp('time')->default(DB::raw('CURRENT_TIMESTAMP'));
-            $table->timestamps();
+        Schema::table('exams', function (Blueprint $table) {
+           
+            $table->foreignId('course_id')->constrained()->onDelete('cascade');
+            $table->date('date');
+            $table->string('access_code');
+            
         });
     }
 

@@ -5,32 +5,41 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-
+use Illuminate\Support\Facades\Auth;
 class AuthController extends Controller
 {
     public function register(Request $request)
     {
-       $request->validate([
-           'name' => 'required|string',
-           'email' => 'required|email|unique:users,email',
-           'password' => 'required|string|confirmed',
-           'role' => 'required|string'
-       ]);
+        // Check if the authenticated user is a superAdmin
+         $authenticatedUser = Auth::user();
+        if ($authenticatedUser->role !== 'superAdmin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        } 
 
+        // Validate the request
+        $request->validate([
+            'name' => 'required|string',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string',
+            'role' => 'required|string'
+        ]);
+
+        // Create the new user
         $user = User::create([
-           'name' => $request->name,
-           'email' => $request->email,
-           'password' => bcrypt($request->password),
-           'role' => $request->role
-       ]);
-       
-       $token = $user->createToken($request->email); 
-       
-        return [
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => bcrypt($request->password),
+            'role' => $request->role
+        ]);
+
+        // Create a token for the new user
+        $token = $user->createToken($request->email);
+
+        // Return the response
+        return response()->json([
             'token' => $token->plainTextToken,
             'user' => $user
-       ]; 
-      
+        ], 201);
     }
     public function login(Request $request)
     {
