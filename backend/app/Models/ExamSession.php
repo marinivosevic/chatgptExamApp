@@ -15,4 +15,9 @@ class ExamSession extends Model
         return $this->hasMany(Answers::class);
     }
 
+    public function answers()
+    {
+        return $this->hasMany(Answers::class);
+    }
+
 }

@@ -11,6 +11,11 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
+
+     public function getAllProfesors(){
+        $profesors = User::where('role','profesor')->get();
+        return response()->json($profesors);
+     }
     public function index()
     {
         
@@ -29,7 +34,7 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        //
+        
     }
 
     /**

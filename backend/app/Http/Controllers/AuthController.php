@@ -12,7 +12,7 @@ class AuthController extends Controller
     {
         // Check if the authenticated user is a superAdmin
          $authenticatedUser = Auth::user();
-        if ($authenticatedUser->role !== 'superAdmin') {
+        if ($authenticatedUser->role === 'student' ) {
             return response()->json(['message' => 'Unauthorized'], 403);
         } 
 

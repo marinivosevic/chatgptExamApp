@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class CourseController extends Controller
 {
     /**
      * Display a listing of the courses.
      */
+
     public function index()
     {
         $courses = Course::all();
@@ -21,6 +24,11 @@ class CourseController extends Controller
      */
     public function store(Request $request)
     {
+
+        $authenticatedUser = Auth::user();
+        if ($authenticatedUser->role !== 'superAdmin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
         $request->validate([
             'name' => 'required|string|max:255',
             'course_manager_id' => 'required',
@@ -86,5 +94,43 @@ class CourseController extends Controller
         $course->delete();
 
         return response()->json(['message' => 'Course deleted successfully']);
+    }
+
+    /**
+     * Add a user to the specified course.
+     */
+
+    public function addUserToCourse(Request $request)
+    {
+
+        $request->validate([
+            'course_id' => 'required|integer',
+            'user_id' => 'required|integer',
+        ]);
+
+        $course = Course::find($request->course_id);
+        if (!$course) {
+            return response()->json(['message' => 'Course not found'], 404);
+        }
+
+        $user = User::find($request->user_id);
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $course->users()->attach($user->id);
+
+        return response()->json(['message' => 'User added to course successfully']);
+    }
+
+    public function getAllUsersCourses($id)
+    {
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $courses = $user->courses;
+        return response()->json($courses);
     }
 }

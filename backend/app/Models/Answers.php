@@ -11,6 +11,11 @@ class Answers extends Model
 
     protected $fillable = ['id','exam_session_id','question_id','answer','is_correct'];
 
+    public function examSession()
+    {
+        return $this->belongsTo(ExamSession::class);
+    }
+
     public function question()
     {
         return $this->belongsTo(Question::class);
