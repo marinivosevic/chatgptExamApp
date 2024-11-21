@@ -27,6 +27,8 @@ Route::get('/exam/{exam_id}/getQuestions', [QuestionController::class, 'getQuest
 Route::post('/start-session', [ExamSessionController::class, 'startSession']);
 Route::post('/end-session', [ExamSessionController::class, 'endSession']);
 
+Route::get('/exam-sessions/{exam_id}', [ExamSessionController::class, 'getExamSessions']);
+
 Route::prefix('auth')->group(function () {
     Route::apiResource('users', UserController::class);
 
@@ -37,3 +39,14 @@ Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/logout', [AuthController::class, 'logout']);
 });
+
+
+    
+    // Get all students for a specific exam
+    Route::get('/exams/{exam}/students', [ExamSessionController::class, 'getStudentsForExam'])->middleware('auth:sanctum');;
+
+    // Get a specific student's answers and points for an exam
+    Route::get('/exams/{exam}/students/{user}', [ExamSessionController::class, 'getStudentDetails'])->middleware('auth:sanctum');;
+
+    // Update a student's points for an exam
+    Route::put('/exams/{exam}/students/{user}/points', [ExamSessionController::class, 'updateStudentPoints'])->middleware('auth:sanctum');;
