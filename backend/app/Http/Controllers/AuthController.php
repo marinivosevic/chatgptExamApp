@@ -70,4 +70,36 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'Logged out']);
     }
+
+    public function registerStudent(Request $request)
+    {
+        // Check if the authenticated user is a superAdmin
+        // Validate the request
+        $request->validate([
+            'name' => 'required|string',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string',
+            
+        ]);
+
+        // Create the new user
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => bcrypt($request->password),
+            'role' => 'student'
+        ]);
+
+        // Create a token for the new user
+        $token = $user->createToken($request->email);
+
+        // Return the response
+        return response()->json(
+            
+            [
+            'Student Registered',
+            'token' => $token->plainTextToken,
+            'user' => $user
+        ], 201);
+    }
 }

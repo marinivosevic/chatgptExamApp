@@ -8,7 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\ExamSessionController;
-use App\Http\Middleware\IsSuperadmin;
+
 
 
 Route::post('/create-course', [CourseController::class, 'store'])->middleware('auth:sanctum');
@@ -38,6 +38,8 @@ Route::prefix('auth')->group(function () {
 
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::post('/studentRegister', [AuthController::class, 'registerStudent']);
 });
 
 
