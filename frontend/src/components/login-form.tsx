@@ -1,75 +1,147 @@
-import React, { useState } from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+'use client'
+import React, { useState } from 'react'
+import { Formik, Form, Field, ErrorMessage } from 'formik'
+import * as Yup from 'yup'
+import axios from 'axios'
+import { useRouter } from 'next/navigation'
+import Cookies from 'js-cookie'
 
-export function LoginForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+import Image from 'next/image'
+import CircularProgress from '@mui/joy/CircularProgress'
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+const LoginSchema = Yup.object().shape({
+    email: Yup.string().required('Required'),
+    password: Yup.string().min(6, 'Too Short!').required('Required'),
+})
 
-    const response = await fetch("http://127.0.0.1:8000/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
+const initialValues = {
+    email: '',
+    password: '',
+}
 
-    if (response.ok) {
-      // Handle successful login
-      console.log("Login successful");
-    } else {
-      // Handle login error
-      console.error("Login failed");
+interface FormData {
+    email: string
+    password: string
+}
+
+export default function LoginForm() {
+   
+    const router = useRouter()
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const handleSubmit = async (values: FormData) => {
+        setIsSubmitting(true)
+        console.log(values)
+        const formData: FormData = {
+            email: values.email,
+            password: values.password,
+        }
+        const await axios.get('/sanctum/csrf-cookie');
+        try {
+            const response = await axios.post(
+                'http://127.0.0.1:8000/api/auth/login',
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }
+            )
+
+            console.log('Success:', response.data)
+            // Store the token and user data in context and local storage
+            Cookies.set('token', response.data.token);
+        
+            router.push('/dashboard') // Redirect to the dashboard
+            setIsSubmitting(false)
+        } catch (error) {
+            console.error('Error:', error)
+        }
     }
-  };
 
-  return (
-    <Card className="mx-auto max-w-sm">
-      <CardHeader>
-        <CardTitle className="text-2xl">Login</CardTitle>
-        <CardDescription>
-          Enter your email below to login to your account
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="grid gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="m@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <Button type="submit">Login</Button>
-        </form>
-      </CardContent>
-    </Card>
-  );
+    return (
+        <div className="flex h-screen bg-blue-500">
+            <div className="w-full max-w-md m-auto bg-white rounded-lg shadow-lg py-10 px-16">
+                <div className="text-center mb-8">
+                    <Image
+                        src={logo}
+                        alt="Logo"
+                        className="w-20 h-20 mx-auto mb-4"
+                        width={80}
+                        height={80}
+                    />
+                    <h1 className="text-3xl font-bold text-blue-500">
+                        RiConnect
+                    </h1>
+                </div>
+                <Formik
+                    initialValues={initialValues}
+                    validationSchema={LoginSchema}
+                    onSubmit={handleSubmit}
+                >
+                    {({ isSubmitting }) => (
+                        <Form className="space-y-6">
+                            <div>
+                                <label
+                                    htmlFor="email"
+                                    className="block text-sm font-medium text-gray-700"
+                                >
+                                    Email
+                                </label>
+                                <Field
+                                    type="text"
+                                    name="email"
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                />
+                                <ErrorMessage
+                                    name="email"
+                                    component="div"
+                                    className="text-red-500 text-sm"
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    htmlFor="password"
+                                    className="block text-sm font-medium text-gray-700"
+                                >
+                                    Password
+                                </label>
+                                <Field
+                                    type="password"
+                                    name="password"
+                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                />
+                                <ErrorMessage
+                                    name="password"
+                                    component="div"
+                                    className="text-red-500 text-sm"
+                                />
+                            </div>
+                            {isSubmitting ? (
+                                <div className=" flex justify-center items-center">
+                                    <CircularProgress />
+                                </div>
+                            ) : (
+                                <div className=" flex justify-center items-center">
+                                    <button
+                                        type="submit"
+                                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-300"
+                                    >
+                                        Login
+                                    </button>
+                                </div>
+                            )}
+                        </Form>
+                    )}
+                </Formik>
+                <div className="text-center mt-4">
+                    <a
+                        href="/Register"
+                        className="text-sm text-blue-500 hover:text-blue-700"
+                    >
+                        Register
+                    </a>
+                </div>
+            </div>
+        </div>
+    )
 }
