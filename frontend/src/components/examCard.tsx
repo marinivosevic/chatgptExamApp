@@ -1,38 +1,27 @@
 import { background } from "@/constants/images";
 import React from "react";
 import Image from "next/image";
+import { Course } from "../app/types/course";
 
-interface NewsCardProps {
-  title: string;
-  description: string;
-  imageSrc: string;
-  tag: string;
-  id: string;
+interface ExamCardProps {
+  course: Course; // Make sure to pass the entire Course object
 }
 
-const ExamCard: React.FC<NewsCardProps> = ({
- 
-}) => {
+const ExamCard: React.FC<ExamCardProps> = ({ course }) => {
   const fallbackImage = "/default-news.jpg"; // Ensure this image exists in your public folder
 
   return (
     <div className="bg-primary-800 rounded-lg shadow-md overflow-hidden transition-transform transform hover:scale-105 hover:cursor-pointer">
       <Image
-        src={background}
-        alt="News Image"
+        src={background || fallbackImage}
+        alt="Course Image"
         className="w-full h-32 object-cover"
         width={400}
         height={400}
       />
       <div className="p-2">
-        {/* <div className="flex items-center mb-1">
-                    <Badge>
-                        <FaTags className="text-white mr-1" />
-                        <span className="text-xs text-gray-300">{tag}</span>
-                    </Badge>
-                </div> */}
         <h2 className="text-lg font-semibold text-gray-700 mb-1">
-          Bašćanska ploća
+          {course.name}
         </h2>
         <p className="text-xs text-gray-600 line-clamp-2">
           Ja, u ime oca i Sina i Svetoga Duha. Ja opat Držiha pisah ovo o ledini

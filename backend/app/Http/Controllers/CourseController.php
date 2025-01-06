@@ -15,6 +15,10 @@ class CourseController extends Controller
 
     public function index()
     {
+        $authenticatedUser = Auth::user();
+        if ($authenticatedUser->role !== 'superAdmin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
         $courses = Course::all();
         return response()->json($courses);
     }

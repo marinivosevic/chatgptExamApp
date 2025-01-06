@@ -4,7 +4,7 @@ import * as React from "react";
 import {
   Home,
   Inbox,
-  Power,
+  User,
   Search,
   Settings2,
   Sparkles,
@@ -21,7 +21,7 @@ import {
 import { logo } from "@/constants/images";
 import Image from "next/image";
 import { useUser } from "@/app/context/userContext";
-
+import { usePathname } from 'next/navigation';
 // This is sample data.
 
 
@@ -29,6 +29,8 @@ export function SidebarLeft({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
   const { user, logout } = useUser();
+  console.log(user);
+  const pathName = usePathname();
   const data = {
  
     navMain: [
@@ -44,7 +46,7 @@ export function SidebarLeft({
       },
       {
         title: "Home",
-        url: "#",
+        url: "/dashboard",
         icon: Home,
         isActive: true,
       },
@@ -54,7 +56,15 @@ export function SidebarLeft({
         icon: Inbox,
         badge: "10",
       },
-    ],
+      ...(user?.role === 'superAdmin' ? [{
+        title: "Users",
+        url: "/dashboard/users",
+        icon: User,
+      }] : []),
+    ].map(item => ({
+      ...item,
+      isActive: item.url === pathName, // set active if path matches item.url
+    })),
     navMainFooter: [
       {
         title: "Settings",

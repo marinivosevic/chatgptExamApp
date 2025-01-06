@@ -13,8 +13,16 @@ class UserController extends Controller
      */
 
      public function getAllProfesors(){
-        $profesors = User::where('role','profesor')->get();
+        $profesors = User::where('role', ['profesor', 'assistant'])->get();
         return response()->json($profesors);
+     }
+     public function getAllStudents(){
+        $students = User::where('role','student')->get();
+        return response()->json($students);
+     }
+     public function getAllUsers(){
+        $users = User::all();
+        return response()->json($users);
      }
     public function index()
     {
