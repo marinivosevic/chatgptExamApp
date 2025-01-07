@@ -12,8 +12,17 @@ class CourseController extends Controller
     /**
      * Display a listing of the courses.
      */
+    public function getUsersForCourse($id){
+        $course = Course::find($id);
+        if (!$course) {
+            return response()->json(['message' => 'Course not found'], 404);
+        }
 
-    public function index()
+        $users = $course->users;
+        return response()->json($users);
+    }
+
+    public function getAll()
     {
         $authenticatedUser = Auth::user();
         if ($authenticatedUser->role !== 'superAdmin') {

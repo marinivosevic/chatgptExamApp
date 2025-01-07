@@ -1,37 +1,49 @@
 "use client";
-import React,{useState} from "react";
+import React,{ useEffect, useState} from "react";
 import ExamCard from "@/components/examCard";
 import { useUser } from "@/app/context/userContext";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { courseService } from "../api/courseService";
 import { Course } from "../types/course";
+import Link from "next/link";
 function Dashboard() {
   const { user } = useUser();
   const router = useRouter();
   const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    const fetchCourses = async () => {
+      try {
+        let data: Course[] = [];
+        if (user.role === "superAdmin") {
+          data = await courseService.useGetAllCourses();
+        } else if (user.role === "student" || user.role === "profesor") {
+          data = await courseService.useGetUsersCourses(user.id);
+        }
+        if (data) {
+          setCourses(Array.isArray(data) ? data : [data]); // Ensure data is an array
+        }
+      } catch (error) {
+        console.error("Failed to fetch courses:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, [user]);
+
   if (!user) {
     return <p>Loading...</p>;
-    // Redirect to login page
   }
-  if(user.role === "superAdmin" && courses.length === 0){
-    courseService.useGetAllCourses().then((data) => {
-      if (data) {
-        console.log(data);
-        setCourses(data);
-      }
-    }
-    );
-  }
-  
-  if((user.role === "student" || user.role === "profesor") && courses.length === 0){
-    courseService.useGetUsersCourses(user.id).then((data) => {
-      if (data) {
-        console.log(data);
-        setCourses(data);
-      }
-    }
-    );
+
+  if (loading) {
+    return <p>Loading courses...</p>;
   }
 
   
@@ -50,7 +62,9 @@ function Dashboard() {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
         {courses.map((course) => (
-          <ExamCard key={course.id} course={course} />
+          <Link key={course.id} href={`/dashboard/courses/${course.id}`}>
+          <ExamCard course={course} />
+        </Link>
         ))}
       </div>
     </div>

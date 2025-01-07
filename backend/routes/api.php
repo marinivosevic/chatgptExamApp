@@ -12,16 +12,19 @@ use App\Http\Controllers\ExamSessionController;
 
 
 Route::post('/create-course', [CourseController::class, 'store'])->middleware('auth:sanctum');
-Route::get('/courses', [CourseController::class, 'index'])->middleware('auth:sanctum');
-
+Route::get('/courses', [CourseController::class, 'getAll'])->middleware('auth:sanctum');
+Route::get('/courses/{course}', [CourseController::class, 'show']);
 Route::post('/create-exam', [QuestionController::class, 'createExamWithQuestions']);
+Route::get('courses/{course}/users', [CourseController::class, 'getUsersForCourse']);
 Route::get('/courses/{course}/exams', [QuestionController::class, 'getExamsForCourse']);
+Route::get('/users/courses/{user_id}', [UserController::class, 'getAllCoursesForUser']);
+
 Route::get('/users/profesors', [UserController::class, 'getAllProfesors']);
 Route::get('/users/students', [UserController::class, 'getAllStudents']);
 Route::get('/users', [UserController::class, 'getAllUsers']);
 Route::post('/courses/addUserToCourse', [CourseController::class, 'addUserToCourse']);
 Route::get('/courses/{user_id}', [CourseController::class, 'getAllUsersCourses']);
-
+Route::get('/users/{user_id}', [UserController::class, 'getUserById']);
 Route::post('/exam/saveAnswers', [QuestionController::class, 'saveAnswers']);
 Route::get('/exam/{exam_id}/getQuestions', [QuestionController::class, 'getQuestionsForExam']);
 

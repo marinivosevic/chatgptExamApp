@@ -12,52 +12,30 @@ class UserController extends Controller
      * Display a listing of the resource.
      */
 
-     public function getAllProfesors(){
+    public function getAllProfesors()
+    {
         $profesors = User::where('role', ['profesor', 'assistant'])->get();
         return response()->json($profesors);
-     }
-     public function getAllStudents(){
-        $students = User::where('role','student')->get();
+    }
+    public function getAllStudents()
+    {
+        $students = User::where('role', 'student')->get();
         return response()->json($students);
-     }
-     public function getAllUsers(){
+    }
+    public function getAllUsers()
+    {
         $users = User::all();
         return response()->json($users);
-     }
-    public function index()
-    {
-        
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreUserRequest $request)
+    public function getUserById($user_id)
     {
-        //
+        $user = User::find($user_id);
+        return response()->json($user);
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(User $user)
+    public function getAllCoursesForUser($user_id)
     {
-        
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateUserRequest $request, User $user)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(User $user)
-    {
-        //
+        $user = User::find($user_id);
+        $courses = $user->courses;
+        return response()->json($courses);
     }
 }

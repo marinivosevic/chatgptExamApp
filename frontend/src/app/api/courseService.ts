@@ -1,6 +1,4 @@
-import { use } from "react";
 import { Course } from "../types/course";
-import { CreateUser } from "../types/createUser";
 import { axiosInstance } from "./config/axios";
 import Cookies from "js-cookie";
 
@@ -43,8 +41,18 @@ export const courseService = {
   useGetUsersCourses: async (id: number) => {
    
     try {
-      const response = await axiosInstance.get(`/courses/${id}`, 
+      const response = await axiosInstance.get(`/users/courses/${id}'`, 
     );
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  },
+
+  getCourseById: async (id: number) => {
+    try {
+      const response = await axiosInstance.get(`/courses/${id}`);
       return response.data;
     } catch (error) {
       console.error(error);

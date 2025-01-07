@@ -38,5 +38,50 @@ export const userService = {
       console.error(error);
       return null;
     }
+  },
+
+  useGetUserById: async (id: number) => {
+    try {
+      const response = await axiosInstance.get(`/users/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  },
+
+  useGetUsersInCourse: async (courseId: number) => {
+    try {
+      const response = await axiosInstance.get(`/courses/${courseId}/users`);
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  },
+
+  useGetAllStudents: async () => {
+    try {
+      const response = await axiosInstance.get("/users/students");
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  },
+
+  useAddUsersToCourse: async (course_id: number, user_id: number) => {
+    const dataToSend = JSON.stringify({ course_id, user_id });
+    console.log(dataToSend);
+    try {
+      const response = await axiosInstance.post(
+        `/courses/addUserToCourse`,
+        dataToSend
+      );
+      return response.data;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
   }
 };
