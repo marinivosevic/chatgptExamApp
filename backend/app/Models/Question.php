@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Question extends Model
 {
     use HasFactory;
-    protected $fillable = ['text', 'exam_id', 'points'];
+    protected $fillable = ['text', 'exam_template_id', 'points'];
 
     public function exam()
     {
-        return $this->belongsTo(Exam::class);
+        return $this->belongsTo(ExamTemplate::class);
     }
 }

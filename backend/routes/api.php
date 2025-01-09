@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\ExamSessionController;
+use App\Http\Controllers\ExamTemplateController;
 
 
 
@@ -18,6 +19,10 @@ Route::post('/create-exam', [QuestionController::class, 'createExamWithQuestions
 Route::get('courses/{course}/users', [CourseController::class, 'getUsersForCourse']);
 Route::get('/courses/{course}/exams', [QuestionController::class, 'getExamsForCourse']);
 Route::get('/users/courses/{user_id}', [UserController::class, 'getAllCoursesForUser']);
+
+Route::post('/create-template', [ExamTemplateController::class, 'createTemplate']);
+Route::get('/list-templates', [ExamTemplateController::class, 'listTemplates']);
+Route::post('/schedule-exam', [ExamTemplateController::class, 'scheduleExam']);
 
 Route::get('/users/profesors', [UserController::class, 'getAllProfesors']);
 Route::get('/users/students', [UserController::class, 'getAllStudents']);
