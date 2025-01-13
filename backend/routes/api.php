@@ -11,7 +11,7 @@ use App\Http\Controllers\ExamSessionController;
 use App\Http\Controllers\ExamTemplateController;
 
 
-
+Route::get('/getTemplatesInCourse/{courseId}', [ExamTemplateController::class, 'getTemplatesInCourse']);
 Route::post('/create-course', [CourseController::class, 'store'])->middleware('auth:sanctum');
 Route::get('/courses', [CourseController::class, 'getAll'])->middleware('auth:sanctum');
 Route::get('/courses/{course}', [CourseController::class, 'show']);

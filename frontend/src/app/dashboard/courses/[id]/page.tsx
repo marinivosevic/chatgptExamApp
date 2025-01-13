@@ -11,11 +11,14 @@ import Box from '@mui/material/Box';
 import { User } from "@/app/types/user";
 import ExamsTab from "../../../../components/ExamsTab";
 import UsersTab from "../../../../components/UsersTab";
+import ExamTemplatesTab from "@/components/ExamTemplatesTab";
+
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
   value: number;
 }
+
 function CustomTabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
 
@@ -38,14 +41,13 @@ function a11yProps(index: number) {
     'aria-controls': `simple-tabpanel-${index}`,
   };
 }
+
 const CoursePage = ({ params }: { params: { id: number } }) => {
   const [course, setCourse] = useState<Course | null>(null);
   const [profesor, setProfesor] = useState<User | null>(null);
   const [value, setValue] = React.useState(0);
-  
 
   useEffect(() => {
-    
     if (params.id) {
       courseService.getCourseById(params.id).then((data) => {
         if (data) {
@@ -53,24 +55,23 @@ const CoursePage = ({ params }: { params: { id: number } }) => {
         }
       });
     }
-    console.log(course);
     if (course?.course_manager_id) {
-      
       userService.useGetUserById(course.course_manager_id).then((data) => {
         if (data) {
           setProfesor(data);
         }
       });
     }
-    console.log(course?.course_manager_id);
   }, [params.id, course?.course_manager_id]);
 
   if (!course || !profesor) {
     return <p>Loading course details...</p>;
   }
+
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -83,7 +84,6 @@ const CoursePage = ({ params }: { params: { id: number } }) => {
         ipsam in veniam explicabo, corporis commodi aliquid inventore
         perferendis iste labore nulla nobis!
       </p>
-      {/* Add other course details here */}
       <div>
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
           <Tabs
@@ -93,16 +93,19 @@ const CoursePage = ({ params }: { params: { id: number } }) => {
           >
             <Tab label="Exams" {...a11yProps(0)} />
             <Tab label="Users" {...a11yProps(1)} />
-           
+            <Tab label="Exam Templates" {...a11yProps(2)} />
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
-          <ExamsTab />
+          <ExamsTab courseId={course.id} />
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
-          <UsersTab courseId={course.id}/>
+          <UsersTab courseId={course.id} />
         </CustomTabPanel>
-       
+        <CustomTabPanel value={value} index={2}>
+          <ExamTemplatesTab courseId={course.id} />
+        </CustomTabPanel>
+
       </div>
     </div>
   );

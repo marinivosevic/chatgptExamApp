@@ -4,23 +4,50 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { examService } from '@/app/api/examService';
+import { Question } from '@/app/types/questions';
+import  { useRouter, useSearchParams } from 'next/navigation';
+import { ToastContainer, toast } from 'react-toastify';
 
 const ExamCreationForm = () => {
   const [testName, setTestName] = useState('');
-  const [testLength, setTestLength] = useState('');
-  const [questions, setQuestions] = useState([{ question: '', points: '' }]);
+  const [description, setDescription] = useState('');
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const course_id = Number(searchParams.get("course_id"));
+
+  const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      examService.useCreateExamTemplate({title: testName, description: description,course_id: course_id ,questions: questions}).then((data) => {
+        if (data) {
+          console.log(data);
+        }
+        toast.success('Exam Template Created Successfully'); //add beteter feedback for user
+        const link = localStorage.getItem('link');
+        localStorage.removeItem('link');
+        if (link) {
+          router.push(link);
+          
+        } else {
+          toast.error('Link not found');
+        }
+        
+        
+  })};
+
 
   const handleAddQuestion = () => {
-    setQuestions([...questions, { question: '', points: '' }]);
+    setQuestions([...questions, { text: '', points: 0 }]);
   };
 
   const handleQuestionChange = (index: number, value: string) => {
     const newQuestions = [...questions];
-    newQuestions[index].question = value;
+    newQuestions[index].text = value;
     setQuestions(newQuestions);
   };
 
-  const handlePointsChange = (index: number, value: string) => {
+  const handlePointsChange = (index: number, value: number) => {
     const newQuestions = [...questions];
     newQuestions[index].points = value;
     setQuestions(newQuestions);
@@ -32,6 +59,7 @@ const ExamCreationForm = () => {
       <form className="w-full max-w-3xl p-15 bg-white shadow-md rounded-lg">
         <div className="flex flex-row gap-4 mb-4 p-5">
           <div className="w-1/2">
+            <ToastContainer />
             <Label htmlFor="testName">Test Name</Label>
             <Input
               id="testName"
@@ -42,12 +70,12 @@ const ExamCreationForm = () => {
             />
           </div>
           <div className="w-1/2">
-            <Label htmlFor="testLength">Test Length (minutes)</Label>
+            <Label htmlFor="testLength">Description</Label>
             <Input
               id="testLength"
-              type="number"
-              value={testLength}
-              onChange={(e) => setTestLength(e.target.value)}
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               className="w-full p-4"
             />
           </div>
@@ -58,7 +86,7 @@ const ExamCreationForm = () => {
             <div className="flex flex-row gap-4">
               <Textarea
                 id={`question${index + 1}`}
-                value={q.question}
+                value={q.text}
                 onChange={(e) => handleQuestionChange(index, e.target.value)}
                 className="w-full p-4"
               />
@@ -79,7 +107,7 @@ const ExamCreationForm = () => {
           <Button type="button" onClick={handleAddQuestion} className="w-full mx-3">
             Add New Question
           </Button>
-          <Button type="button" onClick={handleAddQuestion} className="w-full   mx-3 mb-3">
+          <Button type="submit" onClick={handleSubmit} className="w-full   mx-3 mb-3">
             Done
           </Button>
         </div>

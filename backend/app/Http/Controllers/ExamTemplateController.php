@@ -9,11 +9,13 @@ use Illuminate\Http\Request;
 
 class ExamTemplateController extends Controller
 {
+    
     public function createTemplate(Request $request)
     {
         $validated = $request->validate([
             'title' => 'required|string',
             'description' => 'nullable|string',
+            'course_id' => 'required|exists:courses,id',
             'questions' => 'required|array',
             'questions.*.text' => 'required|string',
             'questions.*.points' => 'required|integer',
@@ -22,6 +24,7 @@ class ExamTemplateController extends Controller
         $template = ExamTemplate::create([
             'title' => $validated['title'],
             'description' => $validated['description'],
+            'course_id' => $validated['course_id'],
         ]);
 
         foreach ($validated['questions'] as $questionData) {
@@ -34,6 +37,12 @@ class ExamTemplateController extends Controller
     public function listTemplates()
     {
         $templates = ExamTemplate::with('questions')->get();
+        return response()->json(['templates' => $templates], 200);
+    }
+
+    public function getTemplatesInCourse($courseId)
+    {
+        $templates = ExamTemplate::where('course_id', $courseId)->with('questions')->get();
         return response()->json(['templates' => $templates], 200);
     }
 
