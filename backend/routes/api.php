@@ -36,6 +36,8 @@ Route::get('/exam/{exam_id}/getQuestions', [QuestionController::class, 'getQuest
 Route::post('/start-session', [ExamSessionController::class, 'startSession']);
 Route::post('/end-session', [ExamSessionController::class, 'endSession']);
 
+Route::get('questionInExamTemplate/{examTemplateId}', [ExamTemplateController::class, 'getQuestionsByExamTemplateId']);
+
 Route::get('/exam-sessions/{exam_id}', [ExamSessionController::class, 'getExamSessions']);
 
 Route::prefix('auth')->group(function () {

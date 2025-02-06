@@ -9,7 +9,7 @@ class Exam extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'time' ,'course_id','date','access_code'];
+    protected $fillable = ['title', 'time', 'course_id', 'date', 'access_code', 'exam_template_id', 'start_time'];
 
     public function questions()
     {
@@ -19,5 +19,9 @@ class Exam extends Model
     public function course()
     {
         return $this->belongsTo(Course::class);
+    }
+    public function examTemplate()
+    {
+        return $this->belongsTo(ExamTemplate::class, 'exam_template_id');
     }
 }

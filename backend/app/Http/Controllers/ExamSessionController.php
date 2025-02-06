@@ -7,41 +7,107 @@ use App\Models\ExamSession;
 use App\Models\Exam;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use App\Models\ScheduledExam;
+
 class ExamSessionController extends Controller
 {
-    
-    public function startSession(Request $request){
-        $validated = $request->validate([
-            'user_id' => 'required|integer',
-            'exam_id' => 'required|integer',
-           
-            
-        ]);
 
-        $session = ExamSession::create([
-            'user_id' => $validated['user_id'],
-            'exam_id' => $validated['exam_id'],
-            'started_at' => now(),
-            'status' => "inProgress"
-        ]);
+    public function startSession(Request $request)
+    {
+        try {
+            // 1. Validate request
+            $validated = $request->validate([
+                'user_id' => 'required|integer|exists:users,id',
+                'exam_id' => 'required|integer|exists:exams,id',
+            ]);
 
-        return response()->json($session);
+            // 2. Create session
+            $session = ExamSession::create([
+                'user_id' => $validated['user_id'],
+                'exam_id' => $validated['exam_id'],
+                'started_at' => now(),
+                'status' => 'inProgress',
+            ]);
+
+            if (!$session) {
+                Log::error('Failed to create exam session');
+                return response()->json(['message' => 'Failed to create session'], 500);
+            }
+
+            // 3. Get exam with template and questions
+            // 3. Get exam with template and questions
+            $exam = Exam::with(['examTemplate.questions' => function ($query) {
+                $query->select('id', 'text', 'exam_template_id');
+            }])->findOrFail($validated['exam_id']);
+
+            if (!$exam->examTemplate) {
+                Log::error('Exam template not found for exam: ' . $exam->id);
+                return response()->json(['message' => 'Exam template not found'], 404);
+            }
+
+            $questions = $exam->examTemplate->questions;
+
+            if ($questions->isEmpty()) {
+                Log::error('No questions found for template: ' . $exam->template->id);
+                return response()->json(['message' => 'No questions found for this exam'], 404);
+            }
+
+            // 4. Return success response
+            return response()->json([
+                'session' => [
+                    'id' => $session->id,
+                    'user_id' => $session->user_id,
+                    'exam_id' => $session->exam_id,
+                    'started_at' => $session->started_at,
+                    'status' => $session->status
+                ],
+                'questions' => $questions->map(function ($question) {
+                    return [
+                        'id' => $question->id,
+                        'text' => $question->text
+                    ];
+                })
+            ], 201);
+        } catch (\Exception $e) {
+            Log::error('Error in startSession: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
-    public function endSession(Request $request){
+    public function getSessionQuestions($sessionId)
+    {
+        $session = ExamSession::find($sessionId);
+        if (!$session) {
+            return response()->json(['message' => 'Session not found'], 404);
+        }
+
+        $questions = $session->exam->template->questions;
+
+        return response()->json([
+            'session' => $session,
+            'questions' => $questions,
+        ], 200);
+    }
+
+    public function endSession(Request $request)
+    {
+
         $validated = $request->validate([
-            'user_id' => 'required|integer',
-            'exam_id' => 'required|integer',
-           
-            
+            'user_id' => 'required|integer|exists:users,id',
+            'exam_id' => 'required|integer|exists:scheduled_exams,id',
         ]);
 
-        $session = ExamSession::where('user_id',$validated['user_id'])->where('exam_id',$validated['exam_id'])->first();
+        dd($validated);
+
+        $session = ExamSession::where('user_id', $validated['user_id'])->where('exam_id', $validated['exam_id'])->first();
+
+
         $session->update([
             'ended_at' => now(),
             'status' => 'finished'
         ]);
-       
+
         //TODO Sending questions to ChatGPT
         $answers = $session->answers()->with('question')->get();
 
@@ -59,11 +125,11 @@ class ExamSessionController extends Controller
 
         // Retrieve all exam sessions for the exam, eager load the user
         $examSessions = ExamSession::where('exam_id', $id)
-                                    ->with('user')
-                                    ->get();
+            ->with('user')
+            ->get();
 
         // Map to unique students to prevent duplicates
-        $students = $examSessions->unique('user_id')->map(function($session) {
+        $students = $examSessions->unique('user_id')->map(function ($session) {
             return [
                 'user_id' => $session->user->id,
                 'name' => $session->user->name,
@@ -87,15 +153,15 @@ class ExamSessionController extends Controller
         }
 
         $examSession = ExamSession::where('exam_id', $exam->id)
-                                   ->where('user_id', $user->id)
-                                   ->with(['answers.question'])
-                                   ->first();
+            ->where('user_id', $user->id)
+            ->with(['answers.question'])
+            ->first();
 
         if (!$examSession) {
             return response()->json(['message' => 'Exam session not found for this student'], 404);
         }
 
-        $answers = $examSession->answers->map(function($answer) {
+        $answers = $examSession->answers->map(function ($answer) {
             return [
                 'question_id' => $answer->question->id,
                 'question' => $answer->question->text,
@@ -123,16 +189,16 @@ class ExamSessionController extends Controller
     public function updateStudentPoints(Request $request, Exam $exam, User $user)
     {
         $authenticatedUser = Auth::user();
-        if ($authenticatedUser->role !== 'profesor' ) {
+        if ($authenticatedUser->role !== 'profesor') {
             return response()->json(['message' => 'Unauthorized'], 403);
-        } 
+        }
         $validated = $request->validate([
             'points' => 'required|integer|min:0',
         ]);
 
         $examSession = ExamSession::where('exam_id', $exam->id)
-                                   ->where('user_id', $user->id)
-                                   ->first();
+            ->where('user_id', $user->id)
+            ->first();
 
         if (!$examSession) {
             return response()->json(['message' => 'Exam session not found for this student'], 404);
@@ -143,5 +209,4 @@ class ExamSessionController extends Controller
 
         return response()->json(['message' => 'Points updated successfully', 'points' => $examSession->points], 200);
     }
-        
 }

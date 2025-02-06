@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 
 class ExamTemplateController extends Controller
 {
-    
+
     public function createTemplate(Request $request)
     {
         $validated = $request->validate([
@@ -32,6 +32,21 @@ class ExamTemplateController extends Controller
         }
 
         return response()->json(['message' => 'Template created successfully', 'template' => $template], 201);
+    }
+
+    public function getQuestionsByExamTemplateId($examTemplateId)
+    {
+        // Retrieve all questions associated with the given exam template ID
+        $questions = Question::where('exam_template_id', $examTemplateId)->get();
+
+        if ($questions->isEmpty()) {
+            return response()->json(['message' => 'No questions found for this exam template.'], 404);
+        }
+
+        return response()->json([
+            'exam_template_id' => $examTemplateId,
+            'questions' => $questions,
+        ], 200);
     }
 
     public function listTemplates()

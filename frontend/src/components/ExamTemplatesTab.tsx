@@ -4,19 +4,20 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ExamTemplate } from "@/app/types/examTemplate";
 import { examService } from "@/app/api/examService";
+import { Button } from "./ui/button";
 
 const UsersTab = ({ courseId }: { courseId: number }) => {
   const [templates, setTemplates] = useState<ExamTemplate[]>([]);
   const [loading, setLoading] = useState(true);
-
+  
   // Fetch users already in the course
   useEffect(() => {
     examService.useGetExamTemplatesInCourse(courseId).then((data) => {
-        console.log(data);
-        setTemplates(data.templates);
-        setLoading(false);
+      console.log(data);
+      setTemplates(data.templates);
+      setLoading(false);
     });
-   
+
   }, [courseId]);
 
   if (loading) {
@@ -26,7 +27,7 @@ const UsersTab = ({ courseId }: { courseId: number }) => {
   if (templates.length === 0) {
     return <p>No Exam Templates Found</p>;
   }
-  
+
 
   return (
     <div>
@@ -40,20 +41,27 @@ const UsersTab = ({ courseId }: { courseId: number }) => {
               <p className="text-sm text-muted-foreground">
                 {template.description}
               </p>
-                <p className="text-sm text-muted-foreground">
-                    Questions: {template.questions.length}
-                </p>
+              <p className="text-sm text-muted-foreground">
+                Questions: {template.questions.length}
+              </p>
               <p className="text-sm text-muted-foreground">
                 Created: {new Date(template.created_at).toLocaleDateString()}
               </p>
+              <a href={`/dashboard/examTemplate?template_id=${template.id}`}>
+                <Button
+                  variant="default"
+                >
+                  View Questions
+                </Button>
+              </a>
             </CardContent>
           </Card>
         ))}
       </div>
 
-     
-      
-    </div>
+
+
+    </div >
   );
 };
 

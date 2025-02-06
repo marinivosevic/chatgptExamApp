@@ -13,6 +13,7 @@ import ExamsTab from "../../../../components/ExamsTab";
 import UsersTab from "../../../../components/UsersTab";
 import ExamTemplatesTab from "@/components/ExamTemplatesTab";
 
+
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
@@ -45,6 +46,7 @@ function a11yProps(index: number) {
 const CoursePage = ({ params }: { params: { id: number } }) => {
   const [course, setCourse] = useState<Course | null>(null);
   const [profesor, setProfesor] = useState<User | null>(null);
+  
   const [value, setValue] = React.useState(0);
 
   useEffect(() => {
@@ -62,7 +64,8 @@ const CoursePage = ({ params }: { params: { id: number } }) => {
         }
       });
     }
-  }, [params.id, course?.course_manager_id]);
+    
+  }, [params.id, course?.course_manager_id, ]);
 
   if (!course || !profesor) {
     return <p>Loading course details...</p>;
