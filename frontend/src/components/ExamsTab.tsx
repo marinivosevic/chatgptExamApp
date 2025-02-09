@@ -67,7 +67,7 @@ const ExamsTab: React.FC<ExamsTabProps> = ({ courseId }) => {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
         {exams.map((exam) => (
-          <a key={exam.title} href={`/dashboard/courses/${courseId}/${exam.id}`}  >
+          <a key={exam.title} href={`/${exam.id}`}  >
             <Card className={`p-4 ${getRandomColor()} text-white transform transition-transform duration-300 hover:scale-105`}>
               <CardHeader>
                 <CardTitle>{exam.title}</CardTitle>

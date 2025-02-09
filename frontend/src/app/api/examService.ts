@@ -83,6 +83,40 @@ export const examService = {
             console.error("Error starting exam:", error);
             return null;
         }
+    },
+    useEndExam: async (exam_id: number,user_id:number) => {
+        try {
+            const data = JSON.stringify({exam_id:exam_id,user_id:user_id,});
+            console.log(data);
+            const response = await axiosInstance.post(`/end-session`,data);
+            return response.data;
+        } catch (error) {
+            console.error("Error starting exam:", error);
+            return null;
+        }
+    },
+    useSubmitAnswer: async (session_id: number, question_id: number, answer: string) => {
+        try {
+            console.log(answer)
+            const data = JSON.stringify({exam_session_id:session_id,question_id:question_id,answer:answer});
+            console.log(data);
+            const response = await axiosInstance.post(`/exam/saveAnswers`,data);
+            return response.data;
+        } catch (error) {
+            console.error("Error submitting answer:", error);
+            return null;
+        }
+    },
+    useValidatePassword: async (exam_id: number, password: string) => {
+        try {
+            const data = JSON.stringify({exam_id:exam_id,access_code:password});
+            console.log(data);
+            const response = await axiosInstance.post(`/validate-access-code`,data);
+            return response.data;
+        } catch (error) {
+            console.error("Error validating password:", error);
+            return null;
+        }
     }
     
 

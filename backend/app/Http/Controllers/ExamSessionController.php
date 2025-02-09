@@ -60,7 +60,8 @@ class ExamSessionController extends Controller
                     'user_id' => $session->user_id,
                     'exam_id' => $session->exam_id,
                     'started_at' => $session->started_at,
-                    'status' => $session->status
+                    'status' => $session->status,
+                    'time' => $exam->time,
                 ],
                 'questions' => $questions->map(function ($question) {
                     return [
@@ -90,31 +91,58 @@ class ExamSessionController extends Controller
         ], 200);
     }
 
+
+
     public function endSession(Request $request)
     {
+        // Log the incoming request for debugging
+        Log::info('End Session Request:', $request->all());
 
+        // Validate the incoming data
         $validated = $request->validate([
             'user_id' => 'required|integer|exists:users,id',
-            'exam_id' => 'required|integer|exists:scheduled_exams,id',
+            'exam_id' => 'required|integer|exists:exams,id',
         ]);
 
-        dd($validated);
+        // Log the validated data
+        Log::info('Validated data:', $validated);
 
-        $session = ExamSession::where('user_id', $validated['user_id'])->where('exam_id', $validated['exam_id'])->first();
+        // Find the session based on the user_id and exam_id
+        $session = ExamSession::where('user_id', $validated['user_id'])
+            ->where('exam_id', $validated['exam_id'])
+            ->first();
 
+        // Log the session data
+        if ($session) {
+            Log::info('Session found:', $session->toArray());
+        } else {
+            Log::warning('Session not found for user_id: ' . $validated['user_id'] . ' and exam_id: ' . $validated['exam_id']);
+        }
 
+        // If no session is found, return an error
+        if (!$session) {
+            return response()->json(['error' => 'Session not found'], 404);
+        }
+
+        // Update the session status and set the 'ended_at' field
         $session->update([
             'ended_at' => now(),
-            'status' => 'finished'
+            'status' => 'finished',
         ]);
 
-        //TODO Sending questions to ChatGPT
+        // Log after the update
+        Log::info('Session updated:', $session->toArray());
+
+        // Fetch the answers associated with the session
         $answers = $session->answers()->with('question')->get();
 
-        // Send answers to another API or process as needed
-        // For now, return the answers
+        // Log the answers
+        Log::info('Session answers:', $answers->toArray());
+
+        // Return the answers in the response
         return response()->json(['answers' => $answers], 200);
     }
+
     public function getStudentsForExam($id)
     {
         // Verify that the exam exists
@@ -208,5 +236,24 @@ class ExamSessionController extends Controller
         $examSession->save();
 
         return response()->json(['message' => 'Points updated successfully', 'points' => $examSession->points], 200);
+    }
+
+    public function validateAccessCode(Request $request)
+    {
+        $validated = $request->validate([
+            'access_code' => 'required|string',
+            'exam_id' => 'required|integer|exists:exams,id',
+        ]);
+
+        $exam = Exam::find($validated['exam_id']);
+        if (!$exam) {
+            return response()->json(['message' => 'Exam not found'], 404);
+        }
+
+        if ($exam->access_code !== $validated['access_code']) {
+            return response()->json(['message' => 'Invalid access code', 'isValid' => false], 403);
+        }
+
+        return response()->json(['message' => 'Access code is valid', 'isValid' => true], 200);
     }
 }

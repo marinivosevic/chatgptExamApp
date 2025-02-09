@@ -40,6 +40,8 @@ Route::get('questionInExamTemplate/{examTemplateId}', [ExamTemplateController::c
 
 Route::get('/exam-sessions/{exam_id}', [ExamSessionController::class, 'getExamSessions']);
 
+Route::post('/validate-access-code', [ExamSessionController::class, 'validateAccessCode']);
+
 Route::prefix('auth')->group(function () {
     Route::apiResource('users', UserController::class);
 
@@ -54,12 +56,12 @@ Route::prefix('auth')->group(function () {
 });
 
 
-    
-    // Get all students for a specific exam
-    Route::get('/exams/{exam}/students', [ExamSessionController::class, 'getStudentsForExam'])->middleware('auth:sanctum');;
 
-    // Get a specific student's answers and points for an exam
-    Route::get('/exams/{exam}/students/{user}', [ExamSessionController::class, 'getStudentDetails'])->middleware('auth:sanctum');;
+// Get all students for a specific exam
+Route::get('/exams/{exam}/students', [ExamSessionController::class, 'getStudentsForExam'])->middleware('auth:sanctum');;
 
-    // Update a student's points for an exam
-    Route::put('/exams/{exam}/students/{user}/points', [ExamSessionController::class, 'updateStudentPoints'])->middleware('auth:sanctum');;
+// Get a specific student's answers and points for an exam
+Route::get('/exams/{exam}/students/{user}', [ExamSessionController::class, 'getStudentDetails'])->middleware('auth:sanctum');;
+
+// Update a student's points for an exam
+Route::put('/exams/{exam}/students/{user}/points', [ExamSessionController::class, 'updateStudentPoints'])->middleware('auth:sanctum');;

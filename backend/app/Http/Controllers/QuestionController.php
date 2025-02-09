@@ -7,6 +7,7 @@ use App\Models\Exam;
 use App\Models\Question;
 use Illuminate\Http\Request;
 use App\Models\Course;
+use Illuminate\Support\Facades\Log;
 
 class QuestionController extends Controller
 {
@@ -75,7 +76,7 @@ class QuestionController extends Controller
             'exams' => $exams,
         ], 200);
     }
-    
+
 
     public function saveAnswers(Request $request)
     {
@@ -85,18 +86,30 @@ class QuestionController extends Controller
             'answer' => 'required|string',
         ]);
 
-        Answers::updateOrCreate(
-            [
-                'exam_session_id' => $validated['exam_session_id'],
-                'question_id' => $validated['question_id'],
-            ],
-            [
-                'answer' => $validated['answer'],
-            ]
-        );
+        try {
+            Log::info('Validated Data:', $validated); // Debugging output
 
-        return response()->json(['message' => 'Answer saved successfully'], 200);
+            // Ensure it updates existing answers
+            $answer = Answers::updateOrCreate(
+                [
+                    'exam_session_id' => (int) $validated['exam_session_id'],
+                    'question_id' => (int) $validated['question_id'],
+                ], // Condition to check for existing record
+                [
+                    'answer' => $validated['answer'], // Fields to update
+                ]
+            );
+
+            Log::info('Created/Updated Answer:', $answer->toArray()); // Debugging output
+
+            return response()->json(['message' => 'Answer saved successfully', 'answer' => $answer], 200);
+        } catch (\Exception $e) {
+            Log::error('Failed to save answer:', ['error' => $e->getMessage()]);
+            return response()->json(['message' => 'Failed to save answer', 'error' => $e->getMessage()], 500);
+        }
     }
+
+
 
     public function getQuestionsForExam($examId)
     {
