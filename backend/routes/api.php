@@ -41,7 +41,7 @@ Route::get('questionInExamTemplate/{examTemplateId}', [ExamTemplateController::c
 Route::get('/exam-sessions/{exam_id}', [ExamSessionController::class, 'getExamSessions']);
 
 Route::post('/validate-access-code', [ExamSessionController::class, 'validateAccessCode']);
-
+Route::post('/checkIfUserSolvedExam', [ExamSessionController::class, 'checkIfUserSolvedExam']);
 Route::prefix('auth')->group(function () {
     Route::apiResource('users', UserController::class);
 

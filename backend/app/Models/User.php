@@ -33,4 +33,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Course::class, 'course_manager_id');
     }
+
+    public function solvedExams()
+    {
+        return $this->belongsToMany(Exam::class, 'users_exams_solved')
+            ->withPivot('solved_at');
+    }
 }

@@ -24,4 +24,9 @@ class Exam extends Model
     {
         return $this->belongsTo(ExamTemplate::class, 'exam_template_id');
     }
+    public function solvers()
+    {
+        return $this->belongsToMany(User::class, 'users_exams_solved')
+            ->withPivot('solved_at');
+    }
 }

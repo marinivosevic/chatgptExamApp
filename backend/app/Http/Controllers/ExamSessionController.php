@@ -95,49 +95,41 @@ class ExamSessionController extends Controller
 
     public function endSession(Request $request)
     {
-        // Log the incoming request for debugging
-        Log::info('End Session Request:', $request->all());
 
-        // Validate the incoming data
         $validated = $request->validate([
             'user_id' => 'required|integer|exists:users,id',
             'exam_id' => 'required|integer|exists:exams,id',
         ]);
+        Log::info($validated);
 
-        // Log the validated data
-        Log::info('Validated data:', $validated);
-
-        // Find the session based on the user_id and exam_id
         $session = ExamSession::where('user_id', $validated['user_id'])
             ->where('exam_id', $validated['exam_id'])
             ->first();
 
-        // Log the session data
-        if ($session) {
-            Log::info('Session found:', $session->toArray());
-        } else {
-            Log::warning('Session not found for user_id: ' . $validated['user_id'] . ' and exam_id: ' . $validated['exam_id']);
-        }
+        Log::info($session);
 
-        // If no session is found, return an error
         if (!$session) {
             return response()->json(['error' => 'Session not found'], 404);
         }
 
-        // Update the session status and set the 'ended_at' field
+
         $session->update([
             'ended_at' => now(),
             'status' => 'finished',
         ]);
 
-        // Log after the update
-        Log::info('Session updated:', $session->toArray());
+        $exam = Exam::find($validated['exam_id']);
+        if ($exam) {
 
-        // Fetch the answers associated with the session
+            $exam->solvers()->syncWithoutDetaching([
+                $validated['user_id'] => ['solved_at' => now()]
+            ]);
+        }
+        Log::info($exam);
+
         $answers = $session->answers()->with('question')->get();
 
-        // Log the answers
-        Log::info('Session answers:', $answers->toArray());
+        Log::info($answers);
 
         // Return the answers in the response
         return response()->json(['answers' => $answers], 200);
@@ -175,10 +167,10 @@ class ExamSessionController extends Controller
      */
     public function getStudentDetails(Exam $exam, User $user)
     {
-        $authenticatedUser = Auth::user();
-        if ($authenticatedUser->role !== 'profesor') {
+        /*  $authenticatedUser = Auth::user();
+        if ($authenticatedUser->role !== 'profesor' || $authenticatedUser->role === 'student') {
             return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        } */
 
         $examSession = ExamSession::where('exam_id', $exam->id)
             ->where('user_id', $user->id)
@@ -255,5 +247,27 @@ class ExamSessionController extends Controller
         }
 
         return response()->json(['message' => 'Access code is valid', 'isValid' => true], 200);
+    }
+
+    public function checkIfUserSolvedExam(Request $request)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|integer|exists:users,id',
+            'exam_id' => 'required|integer|exists:exams,id',
+        ]);
+
+        $exam = Exam::find($validated['exam_id']);
+        if (!$exam) {
+            return response()->json(['message' => 'Exam not found'], 404);
+        }
+
+        $user = User::find($validated['user_id']);
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $solved = $exam->solvers->contains($user);
+
+        return response()->json(['solved' => $solved], 200);
     }
 }

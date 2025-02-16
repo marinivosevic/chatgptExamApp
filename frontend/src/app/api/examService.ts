@@ -1,7 +1,17 @@
 import { ExamRequest } from "../types/examRequest";
 import { ExamTemplate } from "../types/examTemplate";
 import { axiosInstance } from "./config/axios";
-//import Cookies from "js-cookie";
+import Cookies from "js-cookie";
+
+const getAuthHeaders = () => {
+    const token = Cookies.get('token');
+    if (!token) {
+        throw new Error('No token found');
+    }
+    return {
+        Authorization: `Bearer ${token}`,
+    };
+};
 export const examService = {
 
     useCreateExamTemplate: async (data: ExamTemplate) => {
@@ -117,7 +127,29 @@ export const examService = {
             console.error("Error validating password:", error);
             return null;
         }
-    }
+    },
+    useCheckIfUserSolvedExam: async (exam_id: number, user_id: number) => {
+        try {
+            const data = JSON.stringify({exam_id:exam_id,user_id:user_id});
+            const response = await axiosInstance.post(`/checkIfUserSolvedExam`,data);
+            return response.data;
+        } catch (error) {
+            console.error("Error checking if user solved exam:", error);
+            return null;
+        }
+    },
+    useFetchUsersAnwsersAndPoints: async (exam_id: number,user_id:number) => {
+        try {
+            const response = await axiosInstance.get(`exams/${exam_id}/students/${user_id}`,  {
+                headers: getAuthHeaders(),
+            });
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching users answers and points:", error);
+            return null;
+        }
+    },
+
     
 
 }
